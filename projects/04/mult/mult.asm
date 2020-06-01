@@ -19,16 +19,18 @@ M = 0
 M = 0
 
 (LOOP)
-    // i >= R1 (i-R1>=0), goto END
+    // if i >= R1 (i-R1 >= 0), goto END
     @i
     D = M
     @R1
     D = D - M
     @END
     D;JGE
+
     // i += 1
     @i
     M = M + 1
+
     // D = R2 + R0
     // R2 = D
     @R2

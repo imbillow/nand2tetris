@@ -30,7 +30,7 @@ M = D
   
     // draw screen
     // for(i = 0; i < screenSize; i++)
-    //      RAM[i] = 0|-1
+    //      RAM[i] = 0|-1(0xffff)
     (DRAW_WHITE_LOOP)
         // if i - screenSize >= 0 then goto DRAW_END
         @i
