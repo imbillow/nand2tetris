@@ -28,4 +28,43 @@ CHIP Memory {
 
     PARTS:
     // Put your code here:
+    // 0b0...
+    Not(in=address[0], out=sm);
+    And(a=sm, b=load, out=loadm);
+
+    Xor(a=address[0], b=1, out=x01);
+    Xor(a=address[1], b=0, out=x10);
+    Xor(a=address[1], b=1, out=x11);
+    Xor(a=address[2], b=0, out=x20);
+    Xor(a=address[2], b=1, out=x21);
+
+    // 0b10...
+    Or(a=x01, b=x10, out=ssx);
+    // 0b100_...
+    Or(a=ssx, b=x20, out=ss0n);
+    Not(in=ss0n, out=ss0);
+    And(a=ss0, b=load, out=loads0);
+    // 0b101_...
+    Or(a=ssx, b=x21, out=ss1n);
+    Not(in=ss1n, out=ss1);
+    And(a=ss1, b=load, out=loads1);
+
+    // 0b110_0000_0000_0000
+    // 0bxx0_....0
+    Or8Way(in=address[7..14], out=xx0);
+    Or8Way(in=address[2..6], out=xx1);
+    Or(a=xx0, b=xx1, out=xx);
+    
+    Or(a=xx, b=x11, out=sk0);
+    Or(a=sk0, b=x01, out=skn);
+    Not(in=skn, out=sk);
+    And(a=sk, b=load, out=loadk);
+
+    RAM16K(in=in, load=loadm, address=address[1..14], out=outm);
+    RAM4K(in=in, load=loads0, address=address[3..14], out=outs0);
+    RAM4K(in=in, load=loads1, address=address[3..14], out=outs1);
+    Register(in=in, load=loadk, out=outk);
+
+    Mux16(a=outs0, b=outm, sel=sm, out=out0);
+    Mux16(a=outs1, b=out0, sel=ss0, out=out1);
 }
