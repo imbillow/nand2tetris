@@ -5,20 +5,20 @@
 
 /**
  * The complete address space of the Hack computer's memory,
- * including RAM and memory-mapped I/O. 
+ * including RAM and memory-mapped I/O.
  * The chip facilitates read and write operations, as follows:
  *     Read:  out(t) = Memory[address(t)](t)
  *     Write: if load(t-1) then Memory[address(t-1)](t) = in(t-1)
- * In words: the chip always outputs the value stored at the memory 
- * location specified by address. If load==1, the in value is loaded 
- * into the memory location specified by address. This value becomes 
+ * In words: the chip always outputs the value stored at the memory
+ * location specified by address. If load==1, the in value is loaded
+ * into the memory location specified by address. This value becomes
  * available through the out output from the next time step onward.
  * Address space rules:
- * Only the upper 16K+8K+1 words of the Memory chip are used. 
- * Access to address>0x6000 is invalid. Access to any address in 
- * the range 0x4000-0x5FFF results in accessing the screen memory 
- * map. Access to address 0x6000 results in accessing the keyboard 
- * memory map. The behavior in these addresses is described in the 
+ * Only the upper 16K+8K+1 words of the Memory chip are used.
+ * Access to address>0x6000 is invalid. Access to any address in
+ * the range 0x4000-0x5FFF results in accessing the screen memory
+ * map. Access to address 0x6000 results in accessing the keyboard
+ * memory map. The behavior in these addresses is described in the
  * Screen and Keyboard chip specifications given in the book.
  */
 
@@ -29,32 +29,30 @@ CHIP Memory {
     PARTS:
     // Put your code here:
     // 0b0...
+    // !address[14]
     Not(in=address[14], out=sm);
-    And(a=sm, b=load, out=loadm);
-
-    Xor(a=address[14], b=true, out=x01);
-    Xor(a=address[13], b=false, out=x10);
-    Xor(a=address[13], b=true, out=x11);
 
     // 0b10...
-    Or(a=x01, b=x10, out=ssn);
-    Not(in=ssn, out=ss);
-    And(a=load, b=ss, out=loads);
+    // address[14]!address[13]
+    Not(in=address[13], out=x13n);
+    And(a=address[14], b=x13n, out=ss);
 
     // 0b110_0000_0000_0000
-    // 0bxx0_....0
-    Or8Way(in=address[0..7], out=xx0);
-    Or8Way(in[0..4]=address[8..12], out=xx1);
-    Or(a=xx0, b=xx1, out=xx);
-    
-    Or(a=xx, b=x11, out=sk0);
-    Or(a=sk0, b=x01, out=skn);
-    Not(in=skn, out=sk);
+    // address[14]address[13]!Or(address[0..12])
+    Or8Way(in=address[0..7], out=x0o7);
+    Or8Way(in[0..4]=address[8..12], out=x8o12);
+    Or(a=x0o7, b=x8o12, out=x0o12);
+
+    Not(in=x0o12, out=sk1);
+    And(a=address[14], b=address[13], out=sk0);
+    And(a=sk0, b=sk1, out=sk);
+
+    And(a=sm, b=load, out=loadm);
+    And(a=ss, b=load, out=loads);
 
     RAM16K(in=in, load=loadm, address=address[0..13], out=outm);
     Screen(in=in, load=loads, address=address[0..12], out=outs);
     Keyboard(out=outk);
 
-
-    Mux4Way16(a=outm, b=outs, c=outk, d=false, sel[0]=ss, sel[1]=sk, out=out);    
+    Mux4Way16(a=outm, b=outs, c=outk, d=false, sel[0]=ss, sel[1]=sk, out=out);
 }
