@@ -49,10 +49,10 @@ CHIP CPU {
     And(a=instruction[15], b=instruction[5], out=loadAoutALU);
     Or(a=loadAIns, b=loadAoutALU, out=loadA);
     Mux16(a=outALU, b[0..14]=instruction[0..14], sel=loadAIns, out=inA);
-    Register(in=inA, load=loadA, out=outA, out[0..14]=addressM);
+    ARegister(in=inA, load=loadA, out=outA, out[0..14]=addressM);
     // D
     And(a=instruction[15], b=instruction[4], out=loadD);
-    Register(in=outALU, load=loadD, out=outD);
+    DRegister(in=outALU, load=loadD, out=outD);
 
     PC(in=outA, load=jmp, inc=true, reset=reset, out[0..14]=pc);
 
